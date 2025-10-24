@@ -50,11 +50,11 @@ def test_local_article_generation(settings) -> None:
         if FAKE_OLLAMA:
             attempt_configs = [(120, 0.0)]
         else:
+            # Reduced from 4 to 2 attempts to expose genuine model failures
+            # while maintaining minimal stability against random flakiness
             attempt_configs = [
                 (180, 0.25),
-                (160, 0.2),
-                (200, 0.15),
-                (140, 0.1),
+                (160, 0.15),
             ]
 
         for model in GENERATOR_MODELS:

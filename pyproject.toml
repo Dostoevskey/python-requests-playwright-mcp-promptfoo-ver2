@@ -33,5 +33,6 @@ testpaths = [
 markers = [
   "ui: marks UI tests that require Playwright browser",
   "api: marks API tests for the Conduit backend",
-  "llm: marks prompt evaluation tests backed by Ollama"
+  "llm: marks prompt evaluation tests backed by Ollama",
+  "llm_audit: marks strict LLM quality audits (zero retries, expected to fail with poor models)"
 ]

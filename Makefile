@@ -91,6 +91,21 @@ test\:llm:
 		$(PYTHON) scripts/seed_demo_data.py --env-file "$(ENV_FILE)"; \
 		PYTHONPATH=. $(PYTEST) -m llm'
 
+test\:llm\:audit:
+	@bash -c 'set -euo pipefail; \
+		docker compose up -d postgres demo-backend demo-frontend; \
+		trap "docker compose down" EXIT; \
+		$(PYTHON) scripts/health_check.py --env-file "$(ENV_FILE)"; \
+		sleep 3; \
+		$(PYTHON) scripts/seed_demo_data.py --env-file "$(ENV_FILE)"; \
+		echo ""; \
+		echo "⚠️  STRICT QUALITY AUDIT MODE ⚠️"; \
+		echo "This test uses zero retries and may FAIL with small models."; \
+		echo "Failures demonstrate the test framework can detect LLM defects."; \
+		echo "Review Allure attachments for detailed failure analysis."; \
+		echo ""; \
+		PYTHONPATH=. $(PYTEST) -m llm_audit --verbose'
+
 test:
 	@bash -c 'set -euo pipefail; \
 		docker compose up -d postgres demo-backend demo-frontend; \
@@ -103,4 +118,4 @@ test:
 report:
 	allure serve allure-results
 
-.PHONY: install compose\:up compose\:down lint check\:health promptfoo promptfoo-watch demo\:setup demo\:seed demo\:reset test\:api test\:ui test\:llm test report
+.PHONY: install compose\:up compose\:down lint check\:health promptfoo promptfoo-watch demo\:setup demo\:seed demo\:reset test\:api test\:ui test\:llm test\:llm\:audit test report

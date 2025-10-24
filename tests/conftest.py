@@ -31,7 +31,7 @@ runtime_markers: defaultdict[str, float] = defaultdict(float)
 runtime_phase: dict[str, float] = {"setup": 0.0, "teardown": 0.0}
 runtime_total = 0.0
 runtime_start = 0.0
-TRACKED_MARKERS = ("api", "ui", "llm")
+TRACKED_MARKERS = ("api", "ui", "llm", "llm_audit")
 
 
 @dataclass
@@ -89,6 +89,7 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "ui: UI tests requiring Playwright")
     config.addinivalue_line("markers", "api: API contract tests")
     config.addinivalue_line("markers", "llm: Prompt evaluation tests")
+    config.addinivalue_line("markers", "llm_audit: Strict LLM quality audits (zero retries)")
     session_logger.debug("Pytest configured with custom markers")
 
 
