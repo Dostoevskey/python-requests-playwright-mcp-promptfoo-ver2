@@ -317,6 +317,6 @@ Full details in:
 
 **Author**: AI QA Architect (Autonomous Mode)  
 **Date**: 2025-10-24  
-**Branch**: `enhancements-staff-sdet`  
+**Branch**: `feature/audit-persistence-and-model-recommendations`  
 **Target**: `main`
 
