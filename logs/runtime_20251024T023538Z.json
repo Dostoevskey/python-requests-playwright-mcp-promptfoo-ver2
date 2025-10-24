@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-10-24T02:35:38+00:00",
+  "exitstatus": 1,
+  "wall_clock_seconds": 2.637,
+  "setup_seconds": 0.039,
+  "teardown_seconds": 0.03,
+  "call_seconds": 2.203,
+  "markers": {
+    "api": 2.203,
+    "ui": 0.0,
+    "llm": 0.0,
+    "llm_audit": 0.0,
+    "other": 0.0
+  }
+}

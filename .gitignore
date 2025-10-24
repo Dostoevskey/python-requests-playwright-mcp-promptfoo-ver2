@@ -7,6 +7,11 @@ node_modules/
 allure-results/
 allure-report/
 playwright-report/
+audit_results/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
 .promptfoo/
 .demo-app-cache/
 .demo-seeded/

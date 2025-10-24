@@ -32,6 +32,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+          python -m pip install pytest-cov pytest-xdist
 
       - name: Install Node dependencies
         run: npm install
@@ -48,14 +49,94 @@ jobs:
       - name: Seed demo data
         run: python scripts/seed_demo_data.py --env-file config/demo.env
 
-      - name: Run tests
-        run: python -m pytest
+      - name: Run tests with coverage
+        run: python -m pytest -n auto --cov=src --cov=tests --cov-report=xml --cov-report=html --cov-report=term
+
+      - name: Upload coverage reports
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          fail_ci_if_error: false
+        continue-on-error: true
 
       - name: Upload Allure results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
+          path: allure-results
+          if-no-files-found: ignore
+
+      - name: Upload coverage HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov
+          if-no-files-found: ignore
+
+      - name: Tear down stack
+        if: always()
+        run: docker compose down
+
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true  # Allow failure for audit tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Start demo stack
+        run: docker compose up -d postgres demo-backend demo-frontend
+
+      - name: Wait for services
+        run: python scripts/health_check.py --env-file config/demo.env
+
+      - name: Seed demo data
+        run: python scripts/seed_demo_data.py --env-file config/demo.env
+
+      - name: Run LLM quality audits (allow failure)
+        run: |
+          echo "⚠️  Running strict LLM quality audits with fake mode"
+          echo "These tests use zero retries and are expected to pass in CI with stubs"
+          USE_FAKE_OLLAMA=1 python -m pytest -m llm_audit --verbose
+        continue-on-error: true
+
+      - name: Upload audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-results
+          path: audit_results
+          if-no-files-found: ignore
+
+      - name: Upload Allure results (audit)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-audit
           path: allure-results
           if-no-files-found: ignore
 

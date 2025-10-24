@@ -44,7 +44,9 @@ import pytest
 import yaml
 from jinja2 import Template
 
+from src.utils.audit_persistence import AuditPersistence, create_audit_metadata
 from src.utils.logger import get_logger
+from src.utils.model_recommender import ModelRecommender
 from src.utils.ollama_client import OllamaRunner
 
 LOGGER = get_logger(__name__)
@@ -345,6 +347,52 @@ def test_article_quality_audit_strict(settings) -> None:
     )
 
     LOGGER.info("\n" + report_text)
+
+    # Persist audit results for historical trend analysis
+    persistence = AuditPersistence(storage_dir="audit_results")
+    metadata = create_audit_metadata(
+        audit_iterations=AUDIT_ITERATIONS,
+        total_scenarios=len(data["scenarios"]),
+        fake_mode=FAKE_OLLAMA,
+        environment=os.environ.get("CI", "").lower() in {"1", "true", "yes"} and "ci" or "local",
+    )
+    audit_file = persistence.save_audit_result(metadata, model_summaries)
+    LOGGER.info("Audit results persisted to %s", audit_file)
+
+    # Generate trend analysis if historical data exists
+    trend_reports = []
+    for model in GENERATOR_MODELS:
+        trend_analysis = persistence.analyze_trends(model, lookback_runs=10)
+        if trend_analysis:
+            trend_report = (
+                f"\n### Historical Trend for {model}:\n"
+                f"- Runs analyzed: {trend_analysis.runs_analyzed}\n"
+                f"- Average success rate: {trend_analysis.avg_success_rate:.1%}\n"
+                f"- Latest vs avg: {trend_analysis.latest_success_rate:.1%} vs {trend_analysis.avg_success_rate:.1%}\n"
+                f"- Trend: {trend_analysis.trend.upper()}\n"
+                f"- Status: {trend_analysis.recommendation}\n"
+            )
+            trend_reports.append(trend_report)
+            LOGGER.info(trend_report)
+
+    # Attach trend analysis to Allure
+    if trend_reports:
+        comprehensive_trend_report = persistence.generate_trend_report(GENERATOR_MODELS, lookback_runs=10)
+        allure.attach(
+            comprehensive_trend_report,
+            name="historical_trend_analysis",
+            attachment_type=allure.attachment_type.TEXT,
+        )
+
+    # Generate smart model replacement recommendations
+    recommender = ModelRecommender()
+    recommendation_report = recommender.generate_recommendation_report(model_summaries)
+    LOGGER.info("\n%s", recommendation_report)
+    allure.attach(
+        recommendation_report,
+        name="model_replacement_recommendations",
+        attachment_type=allure.attachment_type.TEXT,
+    )
 
     # FAIL THE TEST if any model has success rate < 60%
     # This is INTENTIONAL to expose poor models and demonstrate test rigor
