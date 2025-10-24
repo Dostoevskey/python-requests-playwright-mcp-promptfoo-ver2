@@ -26,17 +26,12 @@ def test_promptfoo_eval(settings, tmp_path: Path) -> None:
     if shutil.which("npx") is None:
         pytest.skip("npx not available; install Node.js to run promptfoo evaluations")
 
-     # Guard: require npx and opt-in to run potentially long LLM prompt evaluations
-    if shutil.which("npx") is None:
-        pytest.skip("npx not available; install Node.js to run promptfoo evaluations")
-
     # Simple opt-in guard to avoid accidental runs
     env_dir = Path(settings.env_file).parent if settings.env_file else Path(".")
     if not (env_dir / PROMPTFOO_OPT_IN_FILE).exists() and not Path(PROMPTFOO_OPT_IN_FILE).exists():
         pytest.skip("Promptfoo evaluation is disabled; create a .enable_promptfoo file to opt in")
 
-    # Support multiple promptfoo config paths, falling back to single config
-    config_paths = getattr(settings, "promptfoo_configs", None) or [getattr(settings, "promptfoo_config")]
+    config_paths = list(settings.promptfoo_configs)
 
     for config_path in config_paths:
         with allure.step(f"promptfoo eval: {config_path}"):
@@ -90,4 +85,20 @@ def test_promptfoo_eval(settings, tmp_path: Path) -> None:
                 if prompt.get("metrics", {}).get("testFailCount", 0) > 0
                 or prompt.get("metrics", {}).get("testErrorCount", 0) > 0
             ]
-            assert not failing, f"Promptfoo reported failures for {config_path}: {failing}"
+            if failing:
+                serialized = json.dumps(
+                    [
+                        {
+                            "prompt": label,
+                            "metrics": metrics,
+                        }
+                        for label, metrics in failing
+                    ],
+                    indent=2,
+                )
+                allure.attach(
+                    serialized,
+                    name=f"promptfoo_failures_{config_path.parent.name}",
+                    attachment_type=allure.attachment_type.JSON,
+                )
+                pytest.fail(f"Promptfoo reported failures for {config_path}: see attachment for details")

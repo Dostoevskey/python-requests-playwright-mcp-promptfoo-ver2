@@ -1,0 +1,91 @@
+{
+  "users": [
+    {
+      "username": "alice_writer",
+      "email": "alice@example.com",
+      "bio": "QA lead documenting writer experiences"
+    },
+    {
+      "username": "bob_builder",
+      "email": "bob@example.com",
+      "bio": "Infra engineer focused on tooling reliability"
+    },
+    {
+      "username": "charlie_chronicler",
+      "email": "charlie@example.com",
+      "bio": "Technical chronicler capturing release notes"
+    },
+    {
+      "username": "dana_dev",
+      "email": "dana@example.com",
+      "bio": "Full-stack dev pairing with QA on UI flows"
+    },
+    {
+      "username": "eli_editor",
+      "email": "eli@example.com",
+      "bio": "Editor reviewing LLM-generated articles"
+    }
+  ],
+  "articles": [
+    {
+      "title": "Getting started with the demo stack",
+      "description": "Spin up the RealWorld clone fast",
+      "body": "Boot the Docker stack, run migrations, and confirm readiness with automated health checks.",
+      "tags": ["demo", "bootstrap"]
+    },
+    {
+      "title": "Health checks with confidence",
+      "description": "Guard rails for backend/frontend availability",
+      "body": "Automate HTTP and database checks before every pytest run to avoid flakiness caused by cold starts.",
+      "tags": ["health", "automation"]
+    },
+    {
+      "title": "CRUD flows for writers",
+      "description": "End-to-end API coverage",
+      "body": "Our API suite validates create, update, and delete operations while asserting pagination metadata.",
+      "tags": ["api", "crud"]
+    },
+    {
+      "title": "Pagination sanity for RealWorld",
+      "description": "Ensuring consistent article feeds",
+      "body": "Pagination tests confirm the global feed surfaces at least ten seeded articles split across pages.",
+      "tags": ["api", "pagination"]
+    },
+    {
+      "title": "Authentication quick reference",
+      "description": "Simple token workflow",
+      "body": "Leverage the shared ApiClient to register users deterministically and capture tokens for reuse.",
+      "tags": ["auth", "api"]
+    },
+    {
+      "title": "Drafting with local LLMs",
+      "description": "Harnessing gemma3 and deepseek locally",
+      "body": "Enable USE_FAKE_OLLAMA=0 to exercise real models while the suite catches hallucinations via judges.",
+      "tags": ["llm", "ollama"]
+    },
+    {
+      "title": "Observability with Allure",
+      "description": "Rich reporting for automation",
+      "body": "Every API/UI/LLM test publishes attachments so failed attempts and retries remain visible in reports.",
+      "tags": ["allure", "reporting"]
+    },
+    {
+      "title": "Prompt evaluation workflow",
+      "description": "How Promptfoo fits into QA",
+      "body": "Prompt suites validate rubric adherence, and failures attach raw outputs for review.",
+      "tags": ["promptfoo", "llm"]
+    },
+    {
+      "title": "UI locator generation tips",
+      "description": "Speed up Playwright authoring",
+      "body": "Pair MCP tooling with the seeded data to produce deterministic selectors for cross-viewport tests.",
+      "tags": ["ui", "playwright"]
+    },
+    {
+      "title": "Continuous quality for LLM content",
+      "description": "Judge feedback loops",
+      "body": "Our LLM tests retry judgements to fight noise but still surface the failed attempts for triage.",
+      "tags": ["llm", "quality"]
+    }
+  ]
+}

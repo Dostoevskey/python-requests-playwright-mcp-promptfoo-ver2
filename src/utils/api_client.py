@@ -26,6 +26,7 @@ class ApiError(RuntimeError):
     def __init__(self, message: str, status: Optional[int] = None, body: Optional[str] = None) -> None:
         super().__init__(message)
         self.status = status
+        self.status_code = status  # Alias for consistency
         self.body = body
 
 
@@ -138,6 +139,47 @@ class ApiClient:
     def delete_article(self, creds: UserCredentials, slug: str) -> None:
         headers = {"Authorization": f"Token {creds.token}"} if creds.token else {}
         response = self.session.delete(f"{self.base_url}/articles/{slug}", headers=headers, timeout=self.timeout)
+        self._raise_for_status(response, expected=(200, 204))
+
+    def favorite_article(self, creds: UserCredentials, slug: str) -> dict[str, Any]:
+        """Favorite an article."""
+        headers = {"Authorization": f"Token {creds.token}"} if creds.token else {}
+        response = self.session.post(f"{self.base_url}/articles/{slug}/favorite", headers=headers, timeout=self.timeout)
+        return self._raise_for_status(response, expected=(200, 201))
+
+    def unfavorite_article(self, creds: UserCredentials, slug: str) -> dict[str, Any]:
+        """Unfavorite an article."""
+        headers = {"Authorization": f"Token {creds.token}"} if creds.token else {}
+        response = self.session.delete(f"{self.base_url}/articles/{slug}/favorite", headers=headers, timeout=self.timeout)
+        return self._raise_for_status(response, expected=(200, 204))
+
+    # Comment endpoints --------------------------------------------------
+
+    def add_comment(self, creds: UserCredentials, slug: str, body: str) -> dict[str, Any]:
+        """Add a comment to an article."""
+        headers = {"Authorization": f"Token {creds.token}"} if creds.token else {}
+        payload = {"comment": {"body": body}}
+        response = self.session.post(
+            f"{self.base_url}/articles/{slug}/comments",
+            headers=headers,
+            json=payload,
+            timeout=self.timeout,
+        )
+        return self._raise_for_status(response, expected=(200, 201))
+
+    def get_comments(self, slug: str) -> dict[str, Any]:
+        """Get all comments for an article."""
+        response = self.session.get(f"{self.base_url}/articles/{slug}/comments", timeout=self.timeout)
+        return self._raise_for_status(response, expected=(200,))
+
+    def delete_comment(self, creds: UserCredentials, slug: str, comment_id: int) -> None:
+        """Delete a comment from an article."""
+        headers = {"Authorization": f"Token {creds.token}"} if creds.token else {}
+        response = self.session.delete(
+            f"{self.base_url}/articles/{slug}/comments/{comment_id}",
+            headers=headers,
+            timeout=self.timeout,
+        )
         self._raise_for_status(response, expected=(200, 204))
 
     def close(self) -> None:

@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Any, Optional
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import yaml
 from dotenv import load_dotenv
 
@@ -37,6 +39,16 @@ def slugify(title: str) -> str:
 def _get_auth_session(token: Optional[str] = None) -> requests.Session:
     sess = requests.Session()
     sess.headers.update({"Accept": "application/json", "Content-Type": "application/json"})
+    retry = Retry(
+        total=5,
+        connect=5,
+        backoff_factor=1,
+        status_forcelist=(502, 503, 504),
+        allowed_methods=("GET", "POST", "PUT"),
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    sess.mount("http://", adapter)
+    sess.mount("https://", adapter)
     if token:
         sess.headers.update({"Authorization": f"Token {token}"})
     return sess

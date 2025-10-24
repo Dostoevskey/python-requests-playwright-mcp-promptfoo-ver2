@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-10-22T19:31:13+00:00",
+  "exitstatus": 0,
+  "wall_clock_seconds": 259.671,
+  "setup_seconds": 1.633,
+  "teardown_seconds": 0.163,
+  "call_seconds": 257.617,
+  "markers": {
+    "api": 0.392,
+    "ui": 2.195,
+    "llm": 255.03,
+    "other": 0.0
+  }
+}
